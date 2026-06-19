@@ -67,6 +67,7 @@ type Message struct {
 	Amount     float64   `json:"amount"`
 	TargetID   int       `json:"target_id"`
 	BlockIndex int       `json:"block_index"`
+	ProposerID int       `json:"proposer_id"`
 }
 
 var (
@@ -78,9 +79,12 @@ var (
 	sector    Sector
 	sectors   []Sector
 	// Variáveis da Blockchain
-	blockchain    *Blockchain     = novablockchain()
-	blockVotes    map[string]int  = make(map[string]int)
-	committedHash map[string]bool = make(map[string]bool)
+	blockchain       *Blockchain     = novablockchain()
+	committedHash    map[string]bool = make(map[string]bool)
+	authorizedMiners                 = map[int]bool{
+		1: true,
+		2: true,
+	}
 )
 
 // == CLOCK
@@ -592,16 +596,25 @@ func handleSector(conn net.Conn) {
 
 	case "PROPOSE_BLOCK":
 		mu.Lock()
+
+		// VERIFICAÇÃO DE AUTENTICAÇÃO (PERMISSIONAMENTO)
+		if !authorizedMiners[message.ProposerID] {
+			mu.Unlock()
+			_ = encoder.Encode(Message{Text: "REJECT_BLOCK"})
+			fmt.Printf("\nBloco %d rejeitado: Setor %d não possui autorização de escrita no Ledger.\n", message.Block.Index, message.ProposerID)
+			return
+		}
+
+		// VALIDAÇÃO MATEMÁTICA PADRÃO
 		isValid := validarbloco(message.Block, blockchain.getbloco())
 		mu.Unlock()
 
 		if isValid {
-			// Responde VOTE_BLOCK instantaneamente na mesma conexão
 			_ = encoder.Encode(Message{Text: "VOTE_BLOCK", Block: message.Block})
-			fmt.Printf("\nBloco %d aprovado.\n", message.Block.Index)
+			fmt.Printf("\nBloco %d proposto pelo Setor %d foi aprovado.\n", message.Block.Index, message.ProposerID)
 		} else {
 			_ = encoder.Encode(Message{Text: "REJECT_BLOCK"})
-			fmt.Printf("\nBloco %d reprovado.\n", message.Block.Index)
+			fmt.Printf("\nBloco %d reprovado por erro matemático.\n", message.Block.Index)
 		}
 
 	case "COMMIT_BLOCK":
@@ -865,7 +878,7 @@ func proposeTransaction(txType string, companyID int, amount float64, data strin
 	currentSectors := append([]Sector(nil), sectors...)
 	mu.Unlock()
 
-	msg := Message{Text: "PROPOSE_BLOCK", Block: newBlock}
+	msg := Message{Text: "PROPOSE_BLOCK", Block: newBlock, ProposerID: sector.ID}
 
 	votes := 1       // O próprio criador do bloco já aprova a transação
 	activeNodes := 1 // O próprio criador já conta como um nó ativo na rede
@@ -943,7 +956,7 @@ func proposeTransfer(senderID int, targetID int, amount float64) {
 	currentSectors := append([]Sector(nil), sectors...)
 	mu.Unlock()
 
-	msg := Message{Text: "PROPOSE_BLOCK", Block: newBlock}
+	msg := Message{Text: "PROPOSE_BLOCK", Block: newBlock, ProposerID: sector.ID}
 	votes, activeNodes := 1, 1
 
 	for _, s := range currentSectors {
