@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": 2,
+    "is_active": false,
+    "is_critical": false,
+    "type": "RadarCosteiro",
+    "x": 66,
+    "y": 45
+  },
+  {
+    "id": 1,
+    "is_active": false,
+    "is_critical": false,
+    "type": "RadarCosteiro",
+    "x": 10,
+    "y": 20
+  },
+  {
+    "id": 3,
+    "is_active": false,
+    "is_critical": false,
+    "type": "RadarCosteiro",
+    "x": 112,
+    "y": 77
+  },
+  {
+    "id": 4,
+    "is_active": false,
+    "is_critical": false,
+    "type": "RadarCosteiro",
+    "x": 199,
+    "y": 30
+  }
+]

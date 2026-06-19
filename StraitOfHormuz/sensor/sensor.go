@@ -81,7 +81,7 @@ func runSensor() {
 			}
 		}
 
-		time.Sleep(15 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
 

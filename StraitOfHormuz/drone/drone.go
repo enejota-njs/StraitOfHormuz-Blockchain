@@ -412,7 +412,7 @@ func handleDroneCrash(crashedDroneID int) {
 	}
 }
 
-// monitorDrones Faz checagens periódicas e trata Drone como “caído” quando não responde
+// monitorDrones Faz checagens periódicas e tenta reviver drones que entrarem na rede
 func monitorDrones() {
 	for {
 		mu.Lock()
@@ -421,16 +421,37 @@ func monitorDrones() {
 
 		for _, d := range currentDrones {
 			// Evita checar o próprio Drone
-			if d.IsOn && d.ID != drone.ID {
-				conn, err := net.DialTimeout("tcp", d.AddressForDrone, 2*time.Second)
-				if err != nil {
+			if d.ID == drone.ID {
+				continue
+			}
+
+			// Tenta conectar em TODOS os drones, independentemente se achamos que estão OFF
+			conn, err := net.DialTimeout("tcp", d.AddressForDrone, 2*time.Second)
+
+			if err != nil {
+				// Se deu erro e ele constava como ligado, avisa que caiu
+				if d.IsOn {
 					fmt.Println("Drone não respondeu: ", d.ID)
 					handleDroneCrash(d.ID)
-				} else {
-					_ = conn.Close()
+				}
+			} else {
+				_ = conn.Close()
+
+				// Se conectou com sucesso, mas constava como desligado, revive ele localmente!
+				if !d.IsOn {
+					mu.Lock()
+					for i := range drones {
+						if drones[i].ID == d.ID {
+							drones[i].IsOn = true
+							fmt.Printf("\nDrone %d reconhecido como ONLINE na rede!\n", d.ID)
+							break
+						}
+					}
+					mu.Unlock()
 				}
 			}
 		}
+
 		time.Sleep(3 * time.Second)
 	}
 }
