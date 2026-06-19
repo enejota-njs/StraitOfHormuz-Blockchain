@@ -79,9 +79,9 @@ var (
 	sector    Sector
 	sectors   []Sector
 	// Variáveis da Blockchain
-	blockchain       *Blockchain     = novablockchain()
-	committedHash    map[string]bool = make(map[string]bool)
-	authorizedMiners                 = map[int]bool{
+	blockchain        *Blockchain     = novablockchain()
+	committedHash     map[string]bool = make(map[string]bool)
+	authorizedBrokers                 = map[int]bool{
 		1: true,
 		2: true,
 	}
@@ -598,7 +598,7 @@ func handleSector(conn net.Conn) {
 		mu.Lock()
 
 		// VERIFICAÇÃO DE AUTENTICAÇÃO (PERMISSIONAMENTO)
-		if !authorizedMiners[message.ProposerID] {
+		if !authorizedBrokers[message.ProposerID] {
 			mu.Unlock()
 			_ = encoder.Encode(Message{Text: "REJECT_BLOCK"})
 			fmt.Printf("\nBloco %d rejeitado: Setor %d não possui autorização de escrita no Ledger.\n", message.Block.Index, message.ProposerID)
