@@ -105,7 +105,7 @@ func validarchain(chain []Block) bool {
 	if len(chain) == 0 {
 		return false
 	}
-	// Opcional: verificar o bloco genesis
+	
 	for i := 1; i < len(chain); i++ {
 		if !validarbloco(chain[i], chain[i-1]) {
 			return false

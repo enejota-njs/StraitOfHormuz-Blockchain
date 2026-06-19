@@ -298,15 +298,15 @@ func markRequestAsAttending(request Request, attendingDrone Drone) {
 
 // removeRequestDone Remove a Requisição concluída da fila local do Setor
 func removeRequestDone(request Request) {
-    fmt.Printf("\nRequisição finalizada -> SectorID: %d | RequestID: %d\n", request.SectorID, request.ID)
-    var filtered []Request
-    for _, r := range requests {
-        if r.SectorID == request.SectorID && r.ID == request.ID {
-            continue
-        }
-        filtered = append(filtered, r)
-    }
-    requests = filtered
+	fmt.Printf("\nRequisição finalizada -> SectorID: %d | RequestID: %d\n", request.SectorID, request.ID)
+	var filtered []Request
+	for _, r := range requests {
+		if r.SectorID == request.SectorID && r.ID == request.ID {
+			continue
+		}
+		filtered = append(filtered, r)
+	}
+	requests = filtered
 }
 
 // == DRONE
@@ -397,24 +397,24 @@ func handleDrone(conn net.Conn) {
 		})
 
 	case "DONE":
-    mu.Lock()
-    currentClock := updateClock(message.Clock)
-    removeRequestDone(message.Request) // Remove da fila do setor atual
-    mu.Unlock()
+		mu.Lock()
+		currentClock := updateClock(message.Clock)
+		removeRequestDone(message.Request) // Remove da fila do setor atual
+		mu.Unlock()
 
-    _ = encoder.Encode(Message{Text: "REMOVED", Clock: currentClock})
+		_ = encoder.Encode(Message{Text: "REMOVED", Clock: currentClock})
 
-    msgFinalizacao := Message{
-        Text:    "REMOVE_DONE_REQUEST", // Nova tag de mensagem para os setores
-        Request: message.Request,
-        Clock:   currentClock,
-    }
-    go broadcastToSectors(msgFinalizacao)
+		msgFinalizacao := Message{
+			Text:    "REMOVE_DONE_REQUEST", // Nova tag de mensagem para os setores
+			Request: message.Request,
+			Clock:   currentClock,
+		}
+		go broadcastToSectors(msgFinalizacao)
 
-    if message.Request.SectorID == sector.ID {
-        laudo := fmt.Sprintf("Missão reqID %d concluída com sucesso pelo Drone %d", message.Request.ID, message.Drone.ID)
-        go proposeTransaction("REPORT", sector.ID, 0.0, laudo)
-    }
+		if message.Request.SectorID == sector.ID {
+			laudo := fmt.Sprintf("Missão reqID %d concluída com sucesso pelo Drone %d", message.Request.ID, message.Drone.ID)
+			go proposeTransaction("REPORT", sector.ID, 0.0, laudo)
+		}
 
 	case "SYNC_REQUESTS":
 		// Responde com a fila atual para permitir sincronização entre componentes
@@ -568,9 +568,9 @@ func handleSector(conn net.Conn) {
 		fmt.Printf("\nNotificação de finalização recebida do Setor %d -> RequestID: %d\n", message.Request.SectorID, message.Request.ID)
 		mu.Lock()
 		_ = updateClock(message.Clock)
-		removeRequestDone(message.Request) 
-		mu.Unlock()	
-	
+		removeRequestDone(message.Request)
+		mu.Unlock()
+
 	case "TAMPER":
 		mu.Lock()
 		if message.BlockIndex < len(blockchain.Chain) && message.BlockIndex > 0 {
@@ -617,23 +617,6 @@ func handleSector(conn net.Conn) {
 		mu.Unlock()
 		// Retorna um ACK para liberar a conexão TCP de quem avisou do COMMIT
 		_ = encoder.Encode(Message{Text: "ACK"})
-
-	case "VOTE_BLOCK":
-		mu.Lock()
-		hash := message.Block.Hash
-		blockVotes[hash]++
-		majority := (len(sectors) + 1) / 2
-
-		if blockVotes[hash] > majority && !committedHash[hash] {
-			committedHash[hash] = true
-			blockchain.adicionarbloco(message.Block)
-			fmt.Printf("\nConsenso atingido! Bloco %d salvo. Saldo atual: R$ %.2f\n", message.Block.Index, blockchain.GetBalance(sector.ID))
-
-			mu.Unlock()
-			broadcastToSectors(Message{Text: "COMMIT_BLOCK", Block: message.Block})
-		} else {
-			mu.Unlock()
-		}
 	}
 }
 
@@ -953,8 +936,8 @@ func proposeTransfer(senderID int, targetID int, amount float64) {
 		return
 	}
 
-	txOut := Transaction{Type: "DEDUCTION", CompanyID: senderID, Amount: amount, Data: fmt.Sprintf("Enviou PIX para Setor %d", targetID), Timestamp: time.Now().String()}
-	txIn := Transaction{Type: "DEPOSIT", CompanyID: targetID, Amount: amount, Data: fmt.Sprintf("Recebeu PIX do Setor %d", senderID), Timestamp: time.Now().String()}
+	txOut := Transaction{Type: "DEDUCTION", CompanyID: senderID, Amount: amount, Data: fmt.Sprintf("Enviou dinheiro para Setor %d", targetID), Timestamp: time.Now().String()}
+	txIn := Transaction{Type: "DEPOSIT", CompanyID: targetID, Amount: amount, Data: fmt.Sprintf("Recebeu dinheiro do Setor %d", senderID), Timestamp: time.Now().String()}
 
 	newBlock := blockchain.criarbloco([]Transaction{txOut, txIn})
 	currentSectors := append([]Sector(nil), sectors...)
