@@ -1,0 +1,170 @@
+version: "3.8"
+
+services:
+  sector1:
+    build:
+      context: .
+      dockerfile: ./sector/Dockerfile
+    command: ["./sector_bin", "1"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5055:5055"
+      - "5001:5001"
+      - "5002:5002"
+
+  sector2:
+    build:
+      context: .
+      dockerfile: ./sector/Dockerfile
+    command: ["./sector_bin", "2"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5003:5003"
+      - "5004:5004"
+      - "5005:5005"
+
+  sector3:
+    build:
+      context: .
+      dockerfile: ./sector/Dockerfile
+    command: ["./sector_bin", "3"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5006:5006"
+      - "5007:5007"
+      - "5008:5008"
+
+  sector4:
+    build:
+      context: .
+      dockerfile: ./sector/Dockerfile
+    command: ["./sector_bin", "4"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5009:5009"
+      - "5010:5010"
+      - "5011:5011"
+
+  company1:
+    build:
+      context: .
+      dockerfile: ./company/Dockerfile
+    command: ["1"] 
+    volumes:
+      - ./data:/app/data
+    stdin_open: true 
+    tty: true        
+
+  company2:
+    build:
+      context: .
+      dockerfile: ./company/Dockerfile
+    command: ["2"] 
+    volumes:
+      - ./data:/app/data
+    stdin_open: true
+    tty: true
+
+  company3:
+    build:
+      context: .
+      dockerfile: ./company/Dockerfile
+    command: ["3"] 
+    volumes:
+      - ./data:/app/data
+    stdin_open: true 
+    tty: true       
+
+  company4:
+    build:
+      context: .
+      dockerfile: ./company/Dockerfile
+    command: ["4"]
+    volumes:
+      - ./data:/app/data
+    stdin_open: true
+    tty: true
+
+  drone1:
+    build:
+      context: .
+      dockerfile: ./drone/Dockerfile
+    command: ["./drone_bin", "1"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5012:5012"
+      - "5013:5013"
+
+  drone2:
+    build:
+      context: .
+      dockerfile: ./drone/Dockerfile
+    command: ["./drone_bin", "2"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5014:5014"
+      - "5015:5015"
+      
+  sensor1:
+    build:
+      context: .
+      dockerfile: ./sensor/Dockerfile
+    command: ["./sensor_bin", "1"]
+    volumes:
+      - ./data:/app/data
+  
+  sensor2:
+    build:
+      context: .
+      dockerfile: ./sensor/Dockerfile
+    command: ["./sensor_bin", "2"]
+    volumes:
+      - ./data:/app/data
+
+  sensor3:
+    build:
+      context: .
+      dockerfile: ./sensor/Dockerfile
+    command: ["./sensor_bin", "3"]
+    volumes:
+      - ./data:/app/data
+    
+  sensor4:
+    build:
+      context: .
+      dockerfile: ./sensor/Dockerfile
+    command: ["./sensor_bin", "4"]
+    volumes:
+      - ./data:/app/data
+
+  interface-server:
+    build:
+      context: .
+      dockerfile: ./interface/Dockerfile.go
+    command: ["./interface_bin"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "9001:9001"
+      - "9002:9002"
+      - "9003:9003"
+      - "9004:9004"
+      
+  interface-gui:
+    build:
+      context: .
+      dockerfile: ./interface/Dockerfile.py
+    command: ["python3", "interface.py"]
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./data:/app/data
+      - ./data/images:/app/data/images

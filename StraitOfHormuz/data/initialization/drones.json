@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "address_for_sector": "172.16.201.1:5012",
+    "address_for_drone": "172.16.201.1:5013"
+  },
+  {
+    "id": 2,
+    "address_for_sector": "172.16.201.1:5014",
+    "address_for_drone": "172.16.201.1:5015"
+  }
+]

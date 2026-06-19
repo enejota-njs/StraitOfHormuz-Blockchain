@@ -1,0 +1,26 @@
+[
+  {
+    "id" : 1,
+    "type" : "RadarCosteiro",
+    "x" : 10,
+    "y" : 20
+  },
+  {
+    "id" : 2,
+    "type" : "RadarCosteiro",
+    "x" : 66,
+    "y" : 45
+  },
+  {
+    "id" : 3,
+    "type" : "RadarCosteiro",
+    "x" : 112,
+    "y" : 77
+  },
+  {
+    "id" : 4,
+    "type" : "RadarCosteiro",
+    "x" : 199,
+    "y" : 30
+  }
+]
