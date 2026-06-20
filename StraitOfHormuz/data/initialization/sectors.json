@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "address_for_drone" : "172.16.201.2:5055",
+    "address_for_drone" : "172.16.201.2:5000",
     "address_for_sector": "172.16.201.2:5001",
     "address_for_sensor": "172.16.201.2:5002",
     "left": 1,
