@@ -2,7 +2,7 @@
 
 ### Blockchain própria para autorizar e pagar as missões dos drones
 
-## Índice
+## Sumário
 
 - [🐛 Origem do Projeto](#-origem-do-projeto)
 - [📝 Visão Geral da Blockchain](#-visão-geral-da-blockchain)
@@ -11,7 +11,7 @@
 - [📡 Mensagens da Blockchain (TCP + JSON)](#-mensagens-da-blockchain-tcp--json)
 - [🧩 Componentes](#-componentes)
 - [📂 Estrutura de Pastas](#-estrutura-de-pastas)
-- [🔧 Configuração do Ambiente](#-configuração-do-ambiente)
+- [🔧 Configuração de Ambiente](#-configuração-de-ambiente)
 - [▶️ Como Executar](#️-como-executar)
 - [📌 Observações e Limitações](#-observações-e-limitações)
 
@@ -25,7 +25,7 @@ A partir dessa base, esta versão adiciona uma **blockchain própria** (`sector/
 
 ## 📝 Visão Geral da Blockchain
 
-- **Estrutura:** `Transaction` guarda tipo (`DEPOSIT`, `DEDUCTION`), `CompanyID`, valor e um campo livre de dados (usado como laudo da missão). `Block` encadeia um índice, timestamp, lista de transações, o hash do bloco anterior e o próprio hash (SHA-256 sobre os demais campos). `Blockchain` é simplesmente a lista de blocos (`Chain`).
+- **Estrutura:** `Transaction` guarda tipo (`DEPOSIT`, `DEDUCTION`, `REPORT`), `CompanyID`, valor e um campo livre de dados (usado como laudo da missão). `Block` encadeia um índice, timestamp, lista de transações, o hash do bloco anterior e o próprio hash (SHA-256 sobre os demais campos). `Blockchain` é simplesmente a lista de blocos (`Chain`).
 - **Bloco gênese determinístico:** O primeiro bloco usa um timestamp fixo (`"0000-00-00 00:00:00"`), garantindo que todos os setores comecem com exatamente o mesmo hash — pré-requisito para que a validação entre nós diferentes funcione.
 - **Conta = Setor:** O saldo (`GetBalance`) soma depósitos e subtrai deduções filtrando pelo `CompanyID`; na prática, o ID do setor é também o ID da companhia que o financia, então cada setor tem sua própria "conta" dentro do mesmo livro-contábil compartilhado.
 - **Gate financeiro da missão:** Antes de transformar uma leitura de sensor em requisição, o setor verifica `blockchain.GetBalance(sector.ID)`. Se o saldo for menor que o custo fixo de R$ 50,00 de uma missão, a requisição é bloqueada e nem entra na fila.
@@ -42,7 +42,7 @@ Toda transação só entra na cadeia depois de uma rodada de votação por maior
 4. Atingida a maioria, o bloco é gravado localmente e um `COMMIT_BLOCK` é propagado para que os demais setores também o adicionem às suas cópias da cadeia.
 5. Sem maioria, a transação é simplesmente descartada (com logs de quantos votos foram obtidos versus quantos eram necessários).
 
-Ao iniciar, cada setor roda pede a cadeia completa a um setor conhecido (`REQUEST_CHAIN` / `CHAIN_RESPONSE`) e a adota caso seja **mais longa e válida** que a sua própria cadeia local — uma versão simplificada da regra da "cadeia mais longa válida".
+Ao iniciar, cada setor pede a cadeia completa a um setor conhecido (`REQUEST_CHAIN` / `CHAIN_RESPONSE`) e a adota caso seja **mais longa e válida** que a sua própria cadeia local — uma versão simplificada da regra da "cadeia mais longa válida".
 
 ## 🚀 Fluxo Completo de uma Missão Paga
 
@@ -62,7 +62,7 @@ Ao iniciar, cada setor roda pede a cadeia completa a um setor conhecido (`REQUES
 | `COMMIT_BLOCK` | Setor → Setor | Confirma o bloco aprovado para gravação definitiva em toda a rede. |
 
 > [!NOTE]
-> As demais mensagens do protocolo (`REQUEST`, `QUEUED`, `ATTENDING`, `DONE`, ...) pertencem ao fluxo P2P herdado do projeto original e não foram alteradas pela camada de blockchain.
+> As demais mensagens do protocolo (`REQUEST`, `ATTENDING`, ...) pertencem ao fluxo P2P herdado do projeto original e não foram alteradas pela camada de blockchain.
 
 ## 🧩 Componentes
 
@@ -99,14 +99,12 @@ StraitOfHormuz/
 └── go.sum
 ```
 
-
-
-
 ## 🔧 Configuração de Ambiente
 
 ### Pré-requisitos
 
-- Go (o `go.mod` declara `go 1.26`; ajuste essa diretiva se estiver usando outra versão do toolchain instalada).
+- Go/Golang.
+- Docker.
 - Python 3 com `pygame` instalado (`pip install pygame`), apenas para o painel visual — opcional para a simulação em si.
 
 >[!IMPORTANT]
