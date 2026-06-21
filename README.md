@@ -78,6 +78,8 @@ StraitOfHormuz/
 
 ## 📐 Arquitetura
 
+### Diagrama
+
 ### Componentes
 
 | Componente | Arquivo(s) | Nesta versão | Papel |
