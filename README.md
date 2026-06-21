@@ -13,7 +13,7 @@
 - [📍 Descrição do Projeto](#-descrição-do-projeto)
 - [📂 Estrutura de Pastas](#-estrutura-de-pastas)
 - [📐 Arquitetura](#-arquitetura)
-- [⛓️ Blockchain](#-blockchain)
+- [⛓️ Blockchain](#%EF%B8%8F-blockchain)
 - [🚀 Fluxo Completo de uma Missão Paga](#-fluxo-completo-de-uma-missão-paga)
 - [🔧 Configuração de Ambiente](#-configuração-de-ambiente)
 - [▶️ Como Executar](#️-como-executar)
@@ -40,6 +40,14 @@ mesmo saldo para duas escoltas diferentes).
 reconhecimento, o "laudo" da missão deve ser registrado,
 tornando a informação pública e à prova de adulteração para todas as companhias do consórcio.
 
+### Principais Extensões Implementadas
+
+- Blockchain própria
+- Consenso distribuído entre setores
+- Sistema de depósitos
+- Controle de saldo para autorização de missões
+- Registro imutável de operações
+
 ## 📂 Estrutura de Pastas
 
 ```
@@ -47,13 +55,13 @@ StraitOfHormuz/
 ├── company/                  # [novo] cliente CLI para depositar saldo na blockchain de um setor
 │   └── company.go
 ├── data/
-│   ├── images/               # Asset do painel (drone.webp)
+│   ├── images/               # Asset do painel
 │   ├── initialization/       # Configuração de entrada (IDs, endereços, limites)
 │   └── interface/            # Estado em tempo de execução, consumido pelo painel Pygame
 ├── drone/
 │   └── drone.go
 ├── interface/
-│   ├── interface.go           # Hub TCP que persiste o estado recebido em JSON
+│   ├── interface.go           # Hub que persiste o estado recebido em JSON
 │   └── interface.py           # Painel visual (Pygame)
 ├── sector/
 │   ├── sector.go
@@ -133,7 +141,66 @@ Ao iniciar, cada setor pede a cadeia completa a um setor conhecido (`REQUEST_CHA
 >[!IMPORTANT]
 > O `go.mod` declara `go 1.26`; ajuste essa diretiva se estiver usando outra versão.
 
-Os arquivos em `data/initialization/` definem a topologia da rede: `sectors.json` (id, três endereços de comunicação e limites geográficos de cada setor), `drones.json` (id e endereços de cada drone), `sensors.json` (id, tipo e coordenadas de cada sensor) e `interface.json` (endereços do hub de observabilidade). Os endereços de exemplo apontam todos para o mesmo host (`172.16.201.8`); ajuste-os para `127.0.0.1` ou para os IPs reais de cada máquina, conforme o ambiente.
+### Topologia da Rede
+
+Os arquivos em `data/initialization/` definem a topologia da rede. Os endereços de exemplo apontam todos para o mesmo host (`172.16.201.1`); ajuste-os para os IPs reais de cada máquina, conforme o ambiente.
+
+> [!IMPORTANT]
+> Para rodar o sistema em máquinas diferentes, certifique-se de que ambas estejam na mesma rede local e que o firewall permita conexões nas portas utilizadas.
+
+* `sectors.json`
+
+```json
+{
+    // ID
+    "id": 1,                                    
+    // Endereços de comunicação
+    "address_for_drone" : "172.16.201.2:5000",  // para os drones
+    "address_for_sector": "172.16.201.2:5001",  // para outros setores
+    "address_for_sensor": "172.16.201.2:5002",  // para o sensor
+    // Limites geográficos
+    "left": 1,                                  
+    "right": 50,
+    "top": 100,
+    "bottom": 0
+  }
+```
+
+* `drones.json`
+
+```json
+{
+    // ID
+    "id": 1,                                   
+    // Endereços de comunicação
+    "address_for_sector": "172.16.201.1:5012",  // para os setores 
+    "address_for_drone": "172.16.201.1:5013"    // para outros drones
+  }
+```
+
+* `sensors.json` 
+
+```json
+{
+    "id" : 1,    // ID
+    "type" : "RadarCosteiro",    // Tipo
+    // Coordenadas
+    "x" : 10,    
+    "y" : 20
+  }
+```
+
+* `interface.json`
+
+```json
+{
+    // Endereços do hub de observabilidade
+    "sectors" : "172.16.201.1:9001",
+    "drones" : "172.16.201.1:9002",
+    "sensors" : "172.16.201.1:9003",
+    "requests": "172.16.201.1:9004"
+  }
+```
 
 ## ▶️ Como Executar
 
