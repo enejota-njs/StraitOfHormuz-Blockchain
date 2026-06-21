@@ -48,6 +48,8 @@ tornando a informação pública e à prova de adulteração para todas as compa
 - Controle de saldo para autorização de missões
 - Registro imutável de operações
 
+---
+
 ## 📂 Estrutura de Pastas
 
 ```
@@ -71,6 +73,8 @@ StraitOfHormuz/
 ├── go.mod
 └── go.sum
 ```
+
+---
 
 ## 📐 Arquitetura
 
@@ -123,6 +127,8 @@ Ao iniciar, cada setor pede a cadeia completa a um setor conhecido (`REQUEST_CHA
 > [!NOTE]
 > As demais mensagens do protocolo (`REQUEST`, `ATTENDING`, ...) pertencem ao fluxo P2P herdado do projeto original e não foram alteradas pela camada de blockchain.
 
+---
+
 ## 🚀 Fluxo Completo de uma Missão Paga
 
 1. `company.go` deposita saldo em um setor específico — esse depósito também é tratado como uma transação, proposta e votada como qualquer outra.
@@ -130,20 +136,13 @@ Ao iniciar, cada setor pede a cadeia completa a um setor conhecido (`REQUEST_CHA
 3. Ao receber a confirmação de `DONE`, o setor de origem propõe uma `DEDUCTION` de R$ 50,00, que passa pela votação descrita acima e é gravada na cadeia.
 4. O saldo do setor cai; uma nova missão só será aceita se ainda houver saldo suficiente para cobrir o custo.
 
+---
+
 ## 🔧 Configuração de Ambiente
-
-### Pré-requisitos
-
-- Go/Golang.
-- Docker.
-- Python 3 com `pygame` instalado (`pip install pygame`), apenas para o painel visual — opcional para a simulação em si.
-
->[!IMPORTANT]
-> O `go.mod` declara `go 1.26`; ajuste essa diretiva se estiver usando outra versão.
 
 ### Topologia da Rede
 
-Os arquivos em `data/initialization/` definem a topologia da rede. Os endereços de exemplo apontam todos para o mesmo host (`172.16.201.1`); ajuste-os para os IPs reais de cada máquina, conforme o ambiente.
+Os arquivos em `data/initialization/` definem a topologia da rede. Os endereços de exemplo apontam todos para o mesmo host (`172.16.201.1`); **ajuste-os para os IPs reais de cada máquina**, conforme o ambiente.
 
 > [!IMPORTANT]
 > Para rodar o sistema em máquinas diferentes, certifique-se de que ambas estejam na mesma rede local e que o firewall permita conexões nas portas utilizadas.
@@ -202,7 +201,45 @@ Os arquivos em `data/initialization/` definem a topologia da rede. Os endereços
   }
 ```
 
+### Docker-Compose
+
+O `docker-compose.yml` é um arquivo de configuração que orquestra a compilação e execução de múltiplos serviços simuntaneamente. Sendo assim, o usuário não precisa subir vários serviços por linhas de comando individuais. É possível incluir ou excluir entidades a partir da edição desse arquivo. Será apresentado a estrutura geral dos serviços para que o usuário consiga editar o arquivo corretamente:
+
+```
+sector1:
+    build:
+      context: .
+      dockerfile: ./sector/Dockerfile
+    container_name: sector1
+    command: ["./sector_bin", "1"]
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+      - "5002:5002"
+```
+
+* `sector1`: nome do serviço
+* `dockerfile`: diretório do arquivo de compilação. Se fosse um novo drone, o diretório seria `./drone/Dockerfile`, por exemplo
+* `command`: argumentos. O segundo argumento, quando houver, representa o ID da entidade
+* `ports`: portas para comunicação
+
+> [!IMPORTANT]
+> Certifique-se de que nenhum serviço do mesmo tipo tenha as mesmas variavéis, para evitar inconscistências no sistema
+
+---
+
 ## ▶️ Como Executar
+
+### Pré-requisitos
+
+- Go/Golang.
+- Docker + Docker Compose.
+- Python 3 com `pygame` instalado (`pip install pygame`), apenas para o painel visual — opcional para a simulação em si.
+
+>[!IMPORTANT]
+> O `go.mod` declara `go 1.26`; ajuste essa diretiva se estiver usando outra versão.
 
 Todos os processos usam caminhos relativos (`../data/...`), então cada comando deve ser executado dentro da respectiva pasta do componente. Como cada setor nasce com saldo zero, **o passo de depósito (`company.go`) não é opcional** — sem ele, toda requisição de sensor será bloqueada por saldo insuficiente.
 
@@ -232,6 +269,8 @@ go run drone.go 1
 cd sensor
 go run sensor.go 1
 ```
+
+---
 
 ## 📌 Observações e Limitações
 
