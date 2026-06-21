@@ -17,7 +17,7 @@
 - [🚀 Fluxo Completo de uma Missão Paga](#-fluxo-completo-de-uma-missão-paga)
 - [🔧 Configuração de Ambiente](#-configuração-de-ambiente)
 - [▶️ Como Executar](#️-como-executar)
-- [📌 Observações e Limitações](#-observações-e-limitações)
+- [📌 Resultados e Observações](#-resultados-e-observações)
 
 ---
 
@@ -201,38 +201,41 @@ Os arquivos em `data/initialization/` definem a topologia da rede. Os endereços
   }
 ```
 
-### Docker-Compose
+### Docker Compose
 
-O `docker-compose.yml` é um arquivo de configuração que orquestra a compilação e execução de múltiplos serviços simuntaneamente. Sendo assim, o usuário não precisa subir vários serviços por linhas de comando individuais. É possível incluir ou excluir entidades a partir da edição desse arquivo. Será apresentado a estrutura geral dos serviços para que o usuário consiga editar o arquivo corretamente:
+O arquivo `docker-compose.yml` é responsável por orquestrar a construção e execução de múltiplos serviços simultaneamente. Dessa forma, o usuário não precisa iniciar cada serviço por meio de comandos individuais.
 
-```
+Novos serviços podem ser adicionados ou removidos por meio da edição desse arquivo. A seguir é apresentada a estrutura básica de um serviço:
+
+```yaml
 sector1:
-    build:
-      context: .
-      dockerfile: ./sector/Dockerfile
-    container_name: sector1
-    command: ["./sector_bin", "1"]
-    volumes:
-      - ./data:/app/data
-    ports:
-      - "5000:5000"
-      - "5001:5001"
-      - "5002:5002"
+  build:
+    context: .
+    dockerfile: ./sector/Dockerfile
+  container_name: sector1
+  command: ["./sector_bin", "1"]
+  volumes:
+    - ./data:/app/data
+  ports:
+    - "5000:5000"
+    - "5001:5001"
+    - "5002:5002"
 ```
 
-* `sector1`: nome do serviço
-* `dockerfile`: diretório do arquivo de compilação. Se fosse um novo drone, o diretório seria `./drone/Dockerfile`, por exemplo
-* `command`: argumentos. O segundo argumento, quando houver, representa o ID da entidade
-* `ports`: portas para comunicação
+- `sector1`: nome do serviço.
+- `dockerfile`: caminho para o arquivo Dockerfile utilizado na construção da imagem.
+- `command`: comando executado ao iniciar o contêiner. Quando aplicável, o segundo argumento representa o ID da entidade.
+- `ports`: portas utilizadas para comunicação entre os serviços e o ambiente externo.
+- `volumes`: diretórios compartilhados entre o host e o contêiner.
 
 > [!IMPORTANT]
-> Certifique-se de que nenhum serviço do mesmo tipo tenha as mesmas variavéis, para evitar inconscistências no sistema
+> Certifique-se de que serviços do mesmo tipo não utilizem o mesmo identificador, nome de contêiner ou conjunto de portas. Configurações duplicadas podem causar conflitos e inconsistências durante a execução do sistema.
 
 ---
 
 ## ▶️ Como Executar
 
-### Pré-requisitos
+### Requisitos
 
 - Go/Golang.
 - Docker + Docker Compose.
@@ -241,38 +244,31 @@ sector1:
 >[!IMPORTANT]
 > O `go.mod` declara `go 1.26`; ajuste essa diretiva se estiver usando outra versão.
 
-Todos os processos usam caminhos relativos (`../data/...`), então cada comando deve ser executado dentro da respectiva pasta do componente. Como cada setor nasce com saldo zero, **o passo de depósito (`company.go`) não é opcional** — sem ele, toda requisição de sensor será bloqueada por saldo insuficiente.
+### Compilação e Execução
+
+A compilação e execução dos serviços são realizadas com o auxílio do `docker-compose.yml`. O primeiro passo é executar o seguinte comando na raiz do projeto:
 
 ```bash
-# 1. Hub de interface (recebe e persiste o estado)
-cd interface
-go run interface.go
+docker compose up -d --build
+```
 
-# 2. Painel visual (opcional)
-cd interface
-python interface.py
+Após a conclusão do comando, todos os serviços definidos no arquivo `docker-compose.yml` estarão em execução. Para visualizar o log de algum deles, usamos o seguinte comando:
 
-# 3. Setores — repita para cada ID definido em sectors.json
-#    (sector.go e blockchain.go formam o mesmo pacote, por isso "go run ." e não "go run sector.go <id>")
-cd sector
-go run . 1
+```bash
+docker logs -f <service_name>
+```
 
-# 4. Deposite saldo no setor antes de gerar missões
-cd company
-go run company.go 1
+Onde `<service_name>` corresponde ao nome do serviço definido no arquivo `docker-compose.yml` (por exemplo, `sector1`).
 
-# 5. Drones — repita para cada ID definido em drones.json
-cd drone
-go run drone.go 1
+Os serviços de companhia exigem interação direta do usuário. Por esse motivo, eles devem ser iniciados em modo interativo utilizando o comando:
 
-# 6. Sensores — repita para cada ID definido em sensors.json
-cd sensor
-go run sensor.go 1
+```bash
+docker compose run company1
 ```
 
 ---
 
-## 📌 Observações e Limitações
+## 📌 Resultados e Observações
 
 - A cadeia é única e compartilhada por toda a rede de setores; contas diferentes (uma por `CompanyID`/setor) convivem no mesmo livro-contábil, distinguidas apenas no momento de somar o saldo.
 - A maioria exigida no consenso é dinâmica — baseada em quantos setores responderam durante aquela rodada de votação —, então a tolerância a falhas depende de quem está de fato acessível no instante da proposta.
