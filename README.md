@@ -275,15 +275,104 @@ Os serviços de companhia exigem interação direta do usuário. Por esse motivo
 docker compose run company1
 ```
 
+### authorizedBrokers
+
+Para imitar uma blockchain federada, o sistema conta com uma variável chamada `authorizedBrokers` em `./sector/sector.go`. Essa variável define quais companhias têm o direito de realizar depósitos e transferência de créditos. Caso uma companhia não esteja definida lá, ela não possui a habilidade de realizar suas atividades. Essa variável pode ser encontrada no campo `var` e pode ser editada pelo usuário adicionando ou removendo IDs de companhias:
+
+```go
+var (
+	// ...
+
+  authorizedBrokers                 = map[int]bool{
+		1: true,
+		2: true,      // ID da companhia (2) e autorização (true)
+	}
+)
+```
+
+---
+
+## 🧪 Testes
+
+### Gestão de Ativos
+
+Verificou-se se as companhias conseguiam realizar depósitos para si mesmo e para outras companhias. O resultado foi positivo, considerando que a companhia está registrada como autorizada:
+
+1. Depósito de R$100,00 para própria companhia:
+
+```
+================ MENU ================
+1 - Depositar dinheiro
+2 - Transferir para outra Companhia
+3 - Adulterar Bloco (Simular Hack)
+0 - Sair
+Escolha uma opção: 1
+Valor do depósito: R$ 100
+Comando enviado para o Setor com sucesso!
+```
+
+2. Depósito de R$50,00 para outra companhia
+
+```
+Escolha uma opção: 2
+ID da Companhia destino: 2
+Valor da transferência: R$ 50
+Comando enviado para o Setor com sucesso!
+```
+
+3. Resultados em `sector`
+
+```
+// Resultado do primeiro teste
+Pedido de depósito recebido: R$ 100.00
+Consenso atingido! Bloco 1 salvo. Saldo atual: R$ 100.00 (Votos: 4/4)
+
+// Resultado do segundo teste
+Pedido de transferência de R$ 50.00 para a Companhia 2
+Consenso atingido! Transferência salva no Bloco 2.
+
+// Mensagem caso não haja saldo suficiente para transferência
+Pedido de transferência de R$ 1000.00 para a Companhia 2
+Transferência negada. Saldo insuficiente (R$ 0.00).
+
+// Mensagem caso a companhia não esteja autorizada
+Pedido de depósito recebido: R$ 50.00
+Falha no consenso para o bloco 7 (Votos: 1, Nós Ativos: 4, Maioria necessária: 3)  // Não atinge votos suficientes
+```
+
+### Outros Testes
+
+| Teste | Objetivo | Resultado? | Detalhamento |
+|---|---|---|---|
+| Desligamento de diferentes entidades | Testar ausência de **SPOF** | ✅ | O sistema continua funcionando  |
+| Assinatura digital | Testar a segurança da blockchain | ⚠️ | As companhias não têm uma assinatura digital, o que significa que qualquer companhia tem acesso ao laudo completo das missões |
+| Alteração de dados da blockchain | Testar se uma companhia é impossibilitada de alterar algum bloco da blockchain | ✅ | O setor reconhece uma alteração no ledger e solicita uma cópia de um setor vizinho |
+| Recuperação de ledger | Testar se um setor consegue recuperar a blockchain após ser desligado | ✅ | O setor verifica que seu ledger é menor que os outros e solicita uma cópia a outro setor |
+
 ---
 
 ## 📌 Resultados e Observações
+
+### Considerações Importantes
 
 - A cadeia é única e compartilhada por toda a rede de setores; contas diferentes (uma por `CompanyID`/setor) convivem no mesmo livro-contábil, distinguidas apenas no momento de somar o saldo.
 - A maioria exigida no consenso é dinâmica — baseada em quantos setores responderam durante aquela rodada de votação —, então a tolerância a falhas depende de quem está de fato acessível no instante da proposta.
 - O código também trata, dentro do switch de mensagens de cada setor, um caso de voto recebido de forma assíncrona (`VOTE_BLOCK` como mensagem independente, acumulando em `blockVotes`); esse caminho está preparado para um modelo de votação por broadcast, mas não chega a ser acionado pelo fluxo atual de `proposeTransaction`, que já resolve a votação de forma síncrona na própria conexão.
 - O estado da blockchain e da fila de requisições vive em memória de cada processo; os arquivos em `data/interface/` são apenas o reflexo usado pelo painel visual.
 - Limitações herdadas do projeto original (IPs fixos nos exemplos de configuração, ausência de persistência em disco, etc.) continuam valendo — o repositório base traz mais detalhes sobre a parte P2P.
+
+### Objetivos alcançados
+
+* O sistema é distribuído, descentralizado e com ausência de *SPOF*
+* A gestão de créditos foi bem implementada
+* A alteração de blocos no ledger por parte dos setores é impossibilitada, garantindo transparência nas informações
+
+### Melhorias Futuras
+
+* As companhias podem possuir uma assinatura digital, de forma a manter o laudo das missões privado apenas para quem solicitou o drone
+* Pode haver um filtro para o ledger, em vez de apenas imprimir a cópia completa no terminal. Poderia buscar por setor, ID do drone ou ID da requisição
+* Interface própria do ledger para facilitar visualização
+* Método de registro mais sofisticado que `authorizedBrokers`, evitando que o usuário precise realizar alterações no código-fonte
 
 ## 🎯 Contribuidores
 
