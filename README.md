@@ -284,3 +284,8 @@ docker compose run company1
 - O código também trata, dentro do switch de mensagens de cada setor, um caso de voto recebido de forma assíncrona (`VOTE_BLOCK` como mensagem independente, acumulando em `blockVotes`); esse caminho está preparado para um modelo de votação por broadcast, mas não chega a ser acionado pelo fluxo atual de `proposeTransaction`, que já resolve a votação de forma síncrona na própria conexão.
 - O estado da blockchain e da fila de requisições vive em memória de cada processo; os arquivos em `data/interface/` são apenas o reflexo usado pelo painel visual.
 - Limitações herdadas do projeto original (IPs fixos nos exemplos de configuração, ausência de persistência em disco, etc.) continuam valendo — o repositório base traz mais detalhes sobre a parte P2P.
+
+## 🎯 Contribuidores
+
+- [Levi Nogueira Vasconcelos](https://github.com/levi-vasc)
+- [Nathan de Jesus dos Santos](https://github.com/enejota-njs)
