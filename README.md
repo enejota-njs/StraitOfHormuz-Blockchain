@@ -80,6 +80,13 @@ StraitOfHormuz/
 
 ### Diagrama
 
+<div align="center">
+    <img width="680" height="610" alt="architeture" src="https://github.com/user-attachments/assets/9cb657b1-4dfe-4e19-91a5-94a48b3d8367" />
+</div>
+
+> [!NOTE]
+> Cada sensor e companhia são associados a um setor.
+
 ### Componentes
 
 | Componente | Arquivo(s) | Nesta versão | Papel |
