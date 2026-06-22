@@ -17,6 +17,7 @@
 - [🚀 Fluxo Completo de uma Missão Paga](#-fluxo-completo-de-uma-missão-paga)
 - [🔧 Configuração de Ambiente](#-configuração-de-ambiente)
 - [▶️ Como Executar](#️-como-executar)
+- [🧪 Testes](#-testes)
 - [📌 Resultados e Observações](#-resultados-e-observações)
 
 ---
