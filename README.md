@@ -31,7 +31,7 @@ A partir dessa base, esta versão adiciona uma **blockchain própria** (`sector/
 
 ### Objetivos
 
-* **Solução Descentralizada**: Tecnologia distríbuida, descentralizada e com a ausência de Ponto Único de Falha (**SPOF**).
+* **Solução Descentralizada**: Tecnologia distribuída, descentralizada e com a ausência de Ponto Único de Falha (**SPOF**).
 * **Gestão de Ativos:** O sistema deve criar uma moeda digital (token) usada pelas
 companhias para requisitar os drones. O Ledger distribuído deve registrar a posse e a transferência
 desses créditos de forma imutável, garantindo que seja impossível realizar o **"duplo gasto"** (usar o
@@ -240,6 +240,21 @@ sector1:
 > [!IMPORTANT]
 > Certifique-se de que serviços do mesmo tipo não utilizem o mesmo identificador, nome de contêiner ou conjunto de portas. Configurações duplicadas podem causar conflitos e inconsistências durante a execução do sistema.
 
+### authorizedBrokers
+
+Para imitar uma blockchain federada, o sistema conta com uma variável chamada `authorizedBrokers` em `./sector/sector.go`. Essa variável define quais companhias têm o direito de realizar depósitos e transferência de créditos. Caso uma companhia não esteja definida lá, ela não possui a habilidade de realizar suas atividades. Essa variável pode ser encontrada no campo `var` e pode ser editada pelo usuário adicionando ou removendo IDs de companhias:
+
+```go
+var (
+	// ...
+
+  authorizedBrokers                 = map[int]bool{
+		1: true,
+		2: true,      // ID da companhia (2) e autorização (true)
+	}
+)
+```
+
 ---
 
 ## ▶️ Como Executar
@@ -275,28 +290,13 @@ Os serviços de companhia exigem interação direta do usuário. Por esse motivo
 docker compose run company1
 ```
 
-### authorizedBrokers
-
-Para imitar uma blockchain federada, o sistema conta com uma variável chamada `authorizedBrokers` em `./sector/sector.go`. Essa variável define quais companhias têm o direito de realizar depósitos e transferência de créditos. Caso uma companhia não esteja definida lá, ela não possui a habilidade de realizar suas atividades. Essa variável pode ser encontrada no campo `var` e pode ser editada pelo usuário adicionando ou removendo IDs de companhias:
-
-```go
-var (
-	// ...
-
-  authorizedBrokers                 = map[int]bool{
-		1: true,
-		2: true,      // ID da companhia (2) e autorização (true)
-	}
-)
-```
-
 ---
 
 ## 🧪 Testes
 
 ### Gestão de Ativos
 
-Verificou-se se as companhias conseguiam realizar depósitos para si mesmo e para outras companhias. O resultado foi positivo, considerando que a companhia está registrada como autorizada:
+Verificou-se se as companhias conseguiam realizar depósitos para si mesma e para outras companhias. O resultado foi positivo, considerando que a companhia está registrada como autorizada:
 
 1. Depósito de R$100,00 para própria companhia:
 
@@ -363,7 +363,7 @@ Falha no consenso para o bloco 7 (Votos: 1, Nós Ativos: 4, Maioria necessária:
 
 ### Objetivos alcançados
 
-* O sistema é distribuído, descentralizado e com ausência de *SPOF*
+* O sistema é distribuído, descentralizado e com ausência de **SPOF**
 * A gestão de créditos foi bem implementada
 * A alteração de blocos no ledger por parte dos setores é impossibilitada, garantindo transparência nas informações
 
@@ -373,6 +373,8 @@ Falha no consenso para o bloco 7 (Votos: 1, Nós Ativos: 4, Maioria necessária:
 * Pode haver um filtro para o ledger, em vez de apenas imprimir a cópia completa no terminal. Poderia buscar por setor, ID do drone ou ID da requisição
 * Interface própria do ledger para facilitar visualização
 * Método de registro mais sofisticado que `authorizedBrokers`, evitando que o usuário precise realizar alterações no código-fonte
+
+---
 
 ## 🎯 Contribuidores
 
